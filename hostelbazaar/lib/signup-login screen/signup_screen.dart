@@ -1,9 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:hostelbazaar/palette.dart';
+import 'package:hostelbazaar/url.dart';
+import 'package:http/http.dart' as http;
 
-class SignupScreen extends StatelessWidget {
+class SignupScreen extends StatefulWidget {
   static const routeName = "/signup";
 
+  @override
+  State<SignupScreen> createState() => _SignupScreenState();
+}
+
+class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

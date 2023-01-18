@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:hostelbazaar/cart_screen/cart_screen.dart';
+import 'package:hostelbazaar/homescreen/homescreen.dart';
 import 'package:hostelbazaar/palette.dart';
 
 class Footer extends StatelessWidget {
-  const Footer({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -18,9 +18,17 @@ class Footer extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Image.asset("assets/images/home.png"),
+          GestureDetector(
+              onTap: () {
+                Navigator.of(context).pushNamed(Homescreen.routeName);
+              },
+              child: Image.asset("assets/images/home.png")),
           Image.asset("assets/images/category.png"),
-          Image.asset("assets/images/cart.png"),
+          GestureDetector(
+              onTap: () {
+                Navigator.of(context).pushNamed(CartScreen.routeName);
+              },
+              child: Image.asset("assets/images/cart.png")),
         ],
       ),
     );

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hostelbazaar/footer.dart';
 import 'package:hostelbazaar/header.dart';
 import 'package:hostelbazaar/palette.dart';
+import 'package:hostelbazaar/providers/cart.dart';
+import 'package:hostelbazaar/providers/user.dart';
+import 'package:provider/provider.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   static const routeName = "/details";
@@ -11,6 +14,19 @@ class ProductDetailsScreen extends StatefulWidget {
 }
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
+  var userProv;
+  Map<String, dynamic> product = {};
+  late List<int> qty = [];
+  int selectedQuantity = 1;
+
+  @override
+  void initState() {
+    userProv = Provider.of<User>(context, listen: false);
+    product = userProv.selectedProduct;
+    for (int i = 1; i <= product["quantity"]; i++) qty.add(i);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,7 +51,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                   ),
                   Text(
-                    "Product Name",
+                    product["name"],
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -55,7 +71,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "₹ 200",
+                        "₹ " + product["price"].toString(),
                         style: TextStyle(
                           color: primaryColor,
                           fontSize: 18,
@@ -88,13 +104,32 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
-                          "qty: 1",
+                          "qty: $selectedQuantity",
                           style: TextStyle(
                             color: Colors.white,
                           ),
                         ),
+                        DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            elevation: 0,
+                            isDense: true,
+                            isExpanded: false,
+                            items: qty.map((int value) {
+                              return DropdownMenuItem<int>(
+                                value: value,
+                                child: Text(value.toString()),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedQuantity = value!;
+                              });
+                            },
+                          ),
+                        )
                       ],
                     ),
                   ),
@@ -130,7 +165,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           child: Container(
                             width: double.maxFinite,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                var cartProv = Provider.of<Cart>(context, listen: false);
+                                cartProv.addItem(product, selectedQuantity);
+                                final snackBar = SnackBar(
+                                  content: Text("Item added to cart!"),
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              },
                               child: Text(
                                 "Add to cart",
                                 style: TextStyle(
@@ -158,17 +200,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                   SizedBox(height: 20),
                   Text(
-                    "bla bla bla",
+                    product["description"],
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                     ),
                   ),
+                  SizedBox(height: 50),
                 ],
               ),
             ),
           )),
-          Footer(),
+          Footer()
         ],
       ),
     );
