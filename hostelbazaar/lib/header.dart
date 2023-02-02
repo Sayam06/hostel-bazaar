@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hostelbazaar/palette.dart';
+import 'package:hostelbazaar/wishlist_screen/wishlist_screen.dart';
 
 class Header extends StatelessWidget {
-  const Header({super.key});
+  bool showWishlist;
+
+  Header({this.showWishlist = true});
 
   @override
   Widget build(BuildContext context) {
@@ -34,12 +37,18 @@ class Header extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    Container(
-                      // color: Colors.blue,
-                      // height: 30,
-                      margin: EdgeInsets.only(top: 10),
-                      child: Image.asset("assets/images/like.png"),
-                    ),
+                    if (showWishlist)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pushNamed(WishlistScreen.routeName);
+                        },
+                        child: Container(
+                          // color: Colors.blue,
+                          // height: 30,
+                          margin: EdgeInsets.only(top: 10),
+                          child: Image.asset("assets/images/like.png"),
+                        ),
+                      ),
                     SizedBox(width: 20),
                     Container(
                       // color: Colors.blue,

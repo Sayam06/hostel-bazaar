@@ -1,48 +1,41 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:hostelbazaar/homescreen/homescreen.dart';
 import 'package:hostelbazaar/palette.dart';
-import 'package:hostelbazaar/providers/functions.dart';
 import 'package:hostelbazaar/providers/user.dart';
-import 'package:hostelbazaar/signup-login%20screen/details_screen.dart';
-import 'package:hostelbazaar/signup-login%20screen/signup_screen.dart';
-import 'package:hostelbazaar/url.dart';
-import 'package:http/http.dart' as http;
-import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:hostelbazaar/signup-login%20screen/otp_screen.dart';
 import 'package:provider/provider.dart';
 
-class LoginScreen extends StatefulWidget {
-  static const routeName = "/login";
+class DetailsScreen extends StatefulWidget {
+  static const routeName = "/user-details";
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<DetailsScreen> createState() => _DetailsScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _DetailsScreenState extends State<DetailsScreen> {
+  final nameController = new TextEditingController();
   final emailController = new TextEditingController();
-
   final passwordController = new TextEditingController();
+  String error = "";
 
-  void loginUser() async {
-    var response = await API().login(emailController.text, passwordController.text);
-    if (response["success"]) {
-      Provider.of<User>(context, listen: false).token = response["accessToken"].toString().substring(7);
-      Provider.of<User>(context, listen: false).id = JwtDecoder.decode(response["accessToken"])["user"]["_id"];
-      Navigator.of(context).pushReplacementNamed(Homescreen.routeName);
-    } else {
-      final snackBar = SnackBar(
-        content: Text(response["message"]),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  bool verify() {
+    if (nameController.text.isEmpty) {
+      error = "Please enter your name!";
+      return false;
     }
-    // print(response);
+    if (emailController.text.isEmpty) {
+      error = "Please enter your email";
+      return false;
+    }
+    if (passwordController.text.isEmpty) {
+      error = "Please enter a password!";
+      return false;
+    }
+
+    return true;
   }
 
   @override
   Widget build(BuildContext context) {
-    // emailController.text = "mu.kaustav@gmail.com";
-    // passwordController.text = "testing123";
     return Scaffold(
       backgroundColor: bgcolor,
       body: Container(
@@ -51,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 150),
+              SizedBox(height: 120),
               Container(
                 height: 50,
                 child: Image.asset(
@@ -59,6 +52,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               SizedBox(height: 100),
+              inputText("Full Name", nameController, false),
+              SizedBox(height: 20),
               inputText("Email", emailController, false),
               SizedBox(height: 20),
               inputText("Password", passwordController, true),
@@ -70,13 +65,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: 300,
                   child: ElevatedButton(
                       onPressed: () {
-                        loginUser();
+                        if (!verify()) {
+                          final snackBar = SnackBar(
+                            content: Text(error),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                          return;
+                        }
+                        var userProv = Provider.of<User>(context, listen: false);
+                        userProv.name = nameController.text;
+                        userProv.email = emailController.text;
+                        userProv.password = passwordController.text;
+                        Navigator.of(context).pushNamed(OTPScreen.routeName);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: secondaryColor,
                       ),
                       child: Text(
-                        "Log in",
+                        "Next",
                         style: TextStyle(
                           color: primaryColor,
                           fontSize: 16,
@@ -90,17 +96,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Text(
-                    "Don't have an account? ",
+                    "Have an account? ",
                     style: TextStyle(
                       color: primaryColor,
                     ),
                   ),
                   GestureDetector(
                     onTap: () {
-                      Navigator.of(context).pushNamed(SignupScreen.routeName);
+                      Navigator.of(context).pop();
                     },
                     child: Text(
-                      "Sign up.",
+                      "Log in.",
                       style: TextStyle(
                         decoration: TextDecoration.underline,
                         color: primaryColor,
@@ -127,8 +133,8 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: Center(
         child: TextField(
-          controller: controller,
           obscureText: password ? true : false,
+          controller: controller,
           decoration: InputDecoration.collapsed(
             hintText: "$hintText",
           ),

@@ -6,8 +6,16 @@ import 'package:hostelbazaar/product-list%20screen/product_details_screen.dart';
 import 'package:hostelbazaar/product-list%20screen/product_list_screen.dart';
 import 'package:hostelbazaar/providers/cart.dart';
 import 'package:hostelbazaar/providers/user.dart';
+import 'package:hostelbazaar/providers/wishlist.dart';
+import 'package:hostelbazaar/review_screen/review_screen.dart';
+import 'package:hostelbazaar/search-screen/search_screen.dart';
+import 'package:hostelbazaar/signup-login%20screen/details_screen.dart';
+import 'package:hostelbazaar/signup-login%20screen/hostel_screen.dart';
 import 'package:hostelbazaar/signup-login%20screen/login_screen.dart';
+import 'package:hostelbazaar/signup-login%20screen/otp_screen.dart';
 import 'package:hostelbazaar/signup-login%20screen/signup_screen.dart';
+import 'package:hostelbazaar/wishlist_screen/wishlist_screen.dart';
+import 'package:hostelbazaar/your-orders%20screen/your_orders_screen.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -24,6 +32,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (ctx) => User()),
         ChangeNotifierProvider(create: (ctx) => Cart()),
+        ChangeNotifierProvider(create: (ctx) => Wishlist()),
       ],
       child: Consumer<User>(
         builder: (ctx, user, _) {
@@ -51,6 +60,13 @@ class MyApp extends StatelessWidget {
               ProductDetailsScreen.routeName: (ctx) => ProductDetailsScreen(),
               CartScreen.routeName: (ctx) => CartScreen(),
               OrderPlacedScreen.routeName: (ctx) => OrderPlacedScreen(),
+              YourOrdersScreen.routeName: (ctx) => YourOrdersScreen(),
+              SearchScreen.routeName: (ctx) => SearchScreen(),
+              WishlistScreen.routeName: (ctx) => WishlistScreen(),
+              ReviewScreen.routeName: (ctx) => ReviewScreen(),
+              DetailsScreen.routeName: (ctx) => DetailsScreen(),
+              OTPScreen.routeName: (ctx) => OTPScreen(),
+              HostelScreen.routeName: (ctx) => HostelScreen()
             },
           );
         },

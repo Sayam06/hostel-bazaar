@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hostelbazaar/cart_screen/cart_screen.dart';
 import 'package:hostelbazaar/footer.dart';
 import 'package:hostelbazaar/header.dart';
 import 'package:hostelbazaar/palette.dart';
-import 'package:hostelbazaar/product-list%20screen/product_details_screen.dart';
 import 'package:hostelbazaar/product-list%20screen/product_list_screen.dart';
 import 'package:hostelbazaar/providers/functions.dart';
 import 'package:hostelbazaar/providers/user.dart';
+import 'package:hostelbazaar/search-screen/search_screen.dart';
 import 'package:provider/provider.dart';
 
 class Homescreen extends StatefulWidget {
@@ -18,15 +17,10 @@ class Homescreen extends StatefulWidget {
 
 class _HomescreenState extends State<Homescreen> {
   final searchController = new TextEditingController();
+  List<dynamic> searchResults = [];
   bool isLoading = true;
   var userProv;
-  String currentPage = "home";
-
-  void changePage(String page) {
-    setState(() {
-      currentPage = page;
-    });
-  }
+  var wishlistProv;
 
   void initialiseData() async {
     setState(() {
@@ -39,17 +33,33 @@ class _HomescreenState extends State<Homescreen> {
     });
   }
 
+  void search() async {
+    setState(() {
+      isLoading = true;
+    });
+    var response = await API().searchUniqueProduct(searchController.text, userProv.token);
+    userProv.selectedCategoryProductList = response;
+    Navigator.of(context).pushNamed(SearchScreen.routeName).then((value) {
+      setState(() {
+        isLoading = false;
+      });
+    });
+  }
+
   @override
   void initState() {
     userProv = Provider.of<User>(context, listen: false);
+    wishlistProv = Provider.of<User>(context, listen: false);
     initialiseData();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    var w = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: bgcolor,
+      resizeToAvoidBottomInset: false,
       body: isLoading
           ? Center(
               child: CircularProgressIndicator(
@@ -69,7 +79,7 @@ class _HomescreenState extends State<Homescreen> {
                       return Container(
                         height: 50,
                         width: 150,
-                        margin: index == 0 ? EdgeInsets.only(left: 20, right: 5) : EdgeInsets.symmetric(horizontal: 5),
+                        margin: index == 0 ? EdgeInsets.only(left: w * 0.06, right: 5) : EdgeInsets.symmetric(horizontal: 5),
                         decoration: BoxDecoration(
                           color: primaryColor,
                           borderRadius: BorderRadius.circular(10),
@@ -81,7 +91,7 @@ class _HomescreenState extends State<Homescreen> {
                 SizedBox(height: 20),
                 Expanded(
                   child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: w * 0.06),
                     child: Column(
                       children: [
                         Container(
@@ -100,12 +110,73 @@ class _HomescreenState extends State<Homescreen> {
                                 child: TextField(
                                   controller: searchController,
                                   decoration: InputDecoration.collapsed(hintText: "search"),
+                                  onChanged: (_) async {
+                                    if (searchController.text.isEmpty) {
+                                      setState(() {
+                                        searchResults = [];
+                                      });
+                                      return;
+                                    }
+                                    searchResults = await API().searchProduct(searchController.text, userProv.token);
+                                    setState(() {});
+                                  },
                                 ),
                               )),
-                              Image.asset("assets/images/search.png"),
+                              GestureDetector(
+                                  onTap: () {
+                                    if (searchController.text.isNotEmpty) search();
+                                  },
+                                  child: Image.asset("assets/images/search.png")),
                             ],
                           ),
                         ),
+                        if (searchResults.length != 0)
+                          Container(
+                            constraints: BoxConstraints(
+                              maxHeight: 200,
+                            ),
+                            width: double.infinity,
+                            margin: EdgeInsets.only(top: 10),
+                            decoration: BoxDecoration(
+                              color: bgLite,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  SizedBox(height: 10),
+                                  ...searchResults.map((e) {
+                                    return Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            if (searchController.text.isNotEmpty) search();
+                                          },
+                                          child: Container(
+                                            margin: EdgeInsets.symmetric(horizontal: 10),
+                                            width: double.infinity,
+                                            child: Text(
+                                              e["name"],
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Divider(
+                                          color: Colors.black,
+                                          thickness: 0.5,
+                                        ),
+                                      ],
+                                    );
+                                  }),
+                                  SizedBox(height: 10),
+                                ],
+                              ),
+                            ),
+                          ),
                         SizedBox(height: 20),
                         Expanded(
                           // height: 200,
@@ -116,24 +187,24 @@ class _HomescreenState extends State<Homescreen> {
                               children: [
                                 Column(
                                   children: [
-                                    productCat("munchies", userProv),
+                                    productCat("munchies", userProv, w),
                                     SizedBox(height: 10),
-                                    productCat("bakery", userProv),
+                                    productCat("bakery", userProv, w),
                                     SizedBox(height: 10),
-                                    productCat("grooming", userProv),
+                                    productCat("grooming", userProv, w),
                                     SizedBox(height: 10),
                                   ],
                                 ),
                                 // SizedBox(width: 10),
                                 Column(
                                   children: [
-                                    productCat("drinks", userProv),
+                                    productCat("drinks", userProv, w),
                                     SizedBox(height: 10),
-                                    productCat("electronics", userProv),
+                                    productCat("electronics", userProv, w),
                                     SizedBox(height: 10),
-                                    productCat("daily fresh", userProv),
+                                    productCat("daily fresh", userProv, w),
                                     SizedBox(height: 10),
-                                    productCat("misc", userProv),
+                                    productCat("misc", userProv, w),
                                     SizedBox(height: 10),
                                   ],
                                 ),
@@ -145,15 +216,20 @@ class _HomescreenState extends State<Homescreen> {
                     ),
                   ),
                 ),
-                Footer(),
+                Footer(current: "home"),
               ],
             ),
     );
   }
 
-  GestureDetector productCat(String img, var userProv) {
+  GestureDetector productCat(String img, var userProv, var w) {
     return GestureDetector(
-      child: Image.asset("assets/images/$img.png"),
+      child: Container(
+          width: w * 0.42,
+          child: Image.asset(
+            "assets/images/$img.png",
+            fit: BoxFit.fill,
+          )),
       onTap: () {
         userProv.selectedCategory = img;
         Navigator.of(context).pushNamed(ProductListScreen.routeName);

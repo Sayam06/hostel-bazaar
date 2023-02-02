@@ -3,39 +3,26 @@ import 'package:hostelbazaar/footer.dart';
 import 'package:hostelbazaar/header.dart';
 import 'package:hostelbazaar/palette.dart';
 import 'package:hostelbazaar/product-list%20screen/product_details_screen.dart';
+import 'package:hostelbazaar/product-list%20screen/product_list_screen.dart';
 import 'package:hostelbazaar/providers/functions.dart';
 import 'package:hostelbazaar/providers/user.dart';
-import 'package:hostelbazaar/signup-login%20screen/otp_screen.dart';
 import 'package:provider/provider.dart';
 
-class ProductListScreen extends StatefulWidget {
-  static const routeName = "/products";
+class SearchScreen extends StatefulWidget {
+  static const routeName = "/search";
 
   @override
-  State<ProductListScreen> createState() => _ProductListScreenState();
+  State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _ProductListScreenState extends State<ProductListScreen> {
+class _SearchScreenState extends State<SearchScreen> {
   var userProv;
-  bool isLoading = true;
+  bool isLoading = false;
   final searchController = new TextEditingController();
-  List<dynamic> searchResults = [];
-
-  void initialiseData() async {
-    setState(() {
-      isLoading = true;
-    });
-    var response = await API().getProductsByCategory(userProv.selectedCategory, userProv.token);
-    userProv.selectedCategoryProductList = response;
-    setState(() {
-      isLoading = false;
-    });
-  }
 
   @override
   void initState() {
     userProv = Provider.of<User>(context, listen: false);
-    initialiseData();
     super.initState();
   }
 
@@ -45,7 +32,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     });
     var response = await API().searchProduct(searchController.text, userProv.token);
     userProv.selectedCategoryProductList = response;
-    Navigator.of(context).pushReplacementNamed(ProductListScreen.routeName);
+    Navigator.of(context).pushReplacementNamed(SearchScreen.routeName);
   }
 
   @override
@@ -84,16 +71,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                   child: TextField(
                                     controller: searchController,
                                     decoration: InputDecoration.collapsed(hintText: "search"),
-                                    onChanged: (_) async {
-                                      if (searchController.text.isEmpty) {
-                                        setState(() {
-                                          searchResults = [];
-                                        });
-                                        return;
-                                      }
-                                      searchResults = await API().searchProduct(searchController.text, userProv.token);
-                                      setState(() {});
-                                    },
                                   ),
                                 )),
                                 GestureDetector(
@@ -104,53 +81,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               ],
                             ),
                           ),
-                          if (searchResults.length != 0)
-                            Container(
-                              constraints: BoxConstraints(
-                                maxHeight: 200,
-                              ),
-                              width: double.infinity,
-                              margin: EdgeInsets.only(top: 10),
-                              decoration: BoxDecoration(
-                                color: bgLite,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  children: [
-                                    SizedBox(height: 10),
-                                    ...searchResults.map((e) {
-                                      return Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          GestureDetector(
-                                            onTap: () {
-                                              if (searchController.text.isNotEmpty) search();
-                                            },
-                                            child: Container(
-                                              margin: EdgeInsets.symmetric(horizontal: 10),
-                                              width: double.infinity,
-                                              child: Text(
-                                                e["name"],
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Divider(
-                                            color: Colors.black,
-                                            thickness: 0.5,
-                                          ),
-                                        ],
-                                      );
-                                    }),
-                                    SizedBox(height: 10),
-                                  ],
-                                ),
-                              ),
-                            ),
                           SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -187,7 +117,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         itemBuilder: ((context, index) {
                           return GestureDetector(
                             onTap: () {
-                              // userProv.selectedProductIndex = index;
                               userProv.selectedProduct = userProv.selectedCategoryProductList[index];
                               Navigator.of(context).pushNamed(ProductDetailsScreen.routeName);
                             },
