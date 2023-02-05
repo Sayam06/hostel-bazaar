@@ -7,7 +7,8 @@ import 'package:provider/provider.dart';
 
 class Footer extends StatelessWidget {
   String current;
-  Footer({required this.current});
+  BuildContext ctx;
+  Footer({required this.current, required this.ctx});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -23,52 +24,63 @@ class Footer extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           GestureDetector(
-              onTap: () {
-                if (current == "home") return;
-                Navigator.of(context).pushNamed(Homescreen.routeName);
-              },
-              child: Container(
-                  width: 50,
-                  // color: Colors.amber,
-                  child: Container(
-                    width: 50,
-                    height: 40,
-                    decoration: current == "home"
-                        ? BoxDecoration(
-                            color: Color.fromRGBO(141, 134, 157, 0.43),
-                            borderRadius: BorderRadius.circular(19),
-                          )
-                        : null,
-                    child: Image.asset("assets/images/home.png"),
-                  ))),
+            onTap: () {
+              Scaffold.of(context).openDrawer();
+            },
+            child: Container(
+              height: 40,
+              width: 40,
+              padding: EdgeInsets.all(5),
+              decoration: current == "idk"
+                  ? BoxDecoration(
+                      color: Color.fromRGBO(141, 134, 157, 0.43),
+                      borderRadius: BorderRadius.circular(360),
+                    )
+                  : null,
+              child: Image.asset("assets/images/category.png"),
+            ),
+          ),
           GestureDetector(
-              onTap: () {},
+            onTap: () {
+              if (current == "home") return;
+              Navigator.of(context).pushNamed(Homescreen.routeName);
+            },
+            child: Container(
+              width: 40,
+              // color: Colors.amber,
               child: Container(
-                  height: 40,
-                  width: 50,
-                  decoration: current == "idk"
-                      ? BoxDecoration(
-                          color: Color.fromRGBO(141, 134, 157, 0.43),
-                          borderRadius: BorderRadius.circular(19),
-                        )
-                      : null,
-                  child: Image.asset("assets/images/category.png"))),
+                width: 40,
+                height: 40,
+                padding: EdgeInsets.all(8),
+                decoration: current == "home"
+                    ? BoxDecoration(
+                        color: Color.fromRGBO(141, 134, 157, 0.43),
+                        borderRadius: BorderRadius.circular(360),
+                      )
+                    : null,
+                child: Image.asset("assets/images/home.png"),
+              ),
+            ),
+          ),
           GestureDetector(
-              onTap: () {
-                if (current == "cart") return;
-                // userProv.selectedPage = "cart";
-                Navigator.of(context).pushNamed(CartScreen.routeName);
-              },
-              child: Container(
-                  width: 50,
-                  height: 40,
-                  decoration: current == "cart"
-                      ? BoxDecoration(
-                          color: Color.fromRGBO(141, 134, 157, 0.43),
-                          borderRadius: BorderRadius.circular(19),
-                        )
-                      : null,
-                  child: Image.asset("assets/images/cart.png"))),
+            onTap: () {
+              if (current == "cart") return;
+              // userProv.selectedPage = "cart";
+              Navigator.of(context).pushNamed(CartScreen.routeName);
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              padding: EdgeInsets.all(8),
+              decoration: current == "cart"
+                  ? BoxDecoration(
+                      color: Color.fromRGBO(141, 134, 157, 0.43),
+                      borderRadius: BorderRadius.circular(19),
+                    )
+                  : null,
+              child: Image.asset("assets/images/cart.png"),
+            ),
+          ),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hostelbazaar/footer.dart';
 import 'package:hostelbazaar/header.dart';
+import 'package:hostelbazaar/mainDrawer.dart';
 import 'package:hostelbazaar/palette.dart';
 import 'package:hostelbazaar/product-list%20screen/product_details_screen.dart';
 import 'package:hostelbazaar/product-list%20screen/product_list_screen.dart';
@@ -30,14 +31,16 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       isLoading = true;
     });
-    var response = await API().searchProduct(searchController.text, userProv.token);
+    var response = await API().searchProduct(searchController.text);
     userProv.selectedCategoryProductList = response;
+
     Navigator.of(context).pushReplacementNamed(SearchScreen.routeName);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MainDrawer(),
       backgroundColor: bgcolor,
       resizeToAvoidBottomInset: false,
       body: isLoading
@@ -82,38 +85,39 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                           ),
                           SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Sort by: Popularity",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: secondaryColor,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-                                child: Text(
-                                  "Filters",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              )
-                            ],
-                          )
+                          // Row(
+                          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //   children: [
+                          //     Text(
+                          //       "Sort by: Popularity",
+                          //       style: TextStyle(
+                          //         fontSize: 16,
+                          //         color: Colors.white,
+                          //       ),
+                          //     ),
+                          //     Container(
+                          //       decoration: BoxDecoration(
+                          //         color: secondaryColor,
+                          //         borderRadius: BorderRadius.circular(4),
+                          //       ),
+                          //       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+                          //       child: Text(
+                          //         "Filters",
+                          //         style: TextStyle(
+                          //           fontSize: 16,
+                          //           color: Colors.white,
+                          //         ),
+                          //       ),
+                          //     )
+                          //   ],
+                          // )
                         ],
                       ),
                     ),
                     SizedBox(height: 20),
                     Expanded(
                       child: ListView.builder(
+                        physics: BouncingScrollPhysics(),
                         itemBuilder: ((context, index) {
                           return GestureDetector(
                             onTap: () {
@@ -132,10 +136,17 @@ class _SearchScreenState extends State<SearchScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Container(
-                                    height: 100,
-                                    width: 100,
-                                    color: Colors.grey,
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Container(
+                                      height: 80,
+                                      width: 80,
+                                      color: Colors.grey,
+                                      child: Image.network(
+                                        userProv.selectedCategoryProductList[index]["image"],
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
                                   ),
                                   SizedBox(width: 20),
                                   Column(
@@ -145,7 +156,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                         userProv.selectedCategoryProductList[index]["name"],
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           color: Colors.white,
                                         ),
                                       ),
@@ -178,7 +189,10 @@ class _SearchScreenState extends State<SearchScreen> {
                     )
                   ],
                 )),
-                Footer(current: ""),
+                Footer(
+                  current: "",
+                  ctx: context,
+                ),
               ],
             ),
     );

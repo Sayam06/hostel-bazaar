@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:hostelbazaar/homescreen/homescreen.dart';
 import 'package:hostelbazaar/palette.dart';
+import 'package:hostelbazaar/user-profile-screen/user_profile_screen.dart';
 import 'package:hostelbazaar/wishlist_screen/wishlist_screen.dart';
 
 class Header extends StatelessWidget {
   bool showWishlist;
+  bool showProfile;
 
-  Header({this.showWishlist = true});
+  Header({this.showWishlist = true, this.showProfile = true});
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +30,15 @@ class Header extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    Container(
-                      height: 30,
-                      child: Image.asset(
-                        "assets/images/logo.png",
+                    GestureDetector(
+                      onTap: (() {
+                        Navigator.of(context).pushNamedAndRemoveUntil(Homescreen.routeName, (route) => false);
+                      }),
+                      child: Container(
+                        height: 30,
+                        child: Image.asset(
+                          "assets/images/logo.png",
+                        ),
                       ),
                     ),
                   ],
@@ -44,18 +52,26 @@ class Header extends StatelessWidget {
                         },
                         child: Container(
                           // color: Colors.blue,
-                          // height: 30,
+                          height: 23,
                           margin: EdgeInsets.only(top: 10),
-                          child: Image.asset("assets/images/like.png"),
+                          child: Image.asset(
+                            "assets/images/like.png",
+                          ),
                         ),
                       ),
                     SizedBox(width: 20),
-                    Container(
-                      // color: Colors.blue,
-                      // height: 30,
-                      margin: EdgeInsets.only(top: 10),
-                      child: Image.asset("assets/images/user.png"),
-                    )
+                    if (showProfile)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pushNamed(UserProfileScreen.routeName);
+                        },
+                        child: Container(
+                          // color: Colors.blue,
+                          height: 23,
+                          margin: EdgeInsets.only(top: 10),
+                          child: Image.asset("assets/images/user.png"),
+                        ),
+                      )
                   ],
                 )
               ],

@@ -23,7 +23,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
     setState(() {
       isLoading = true;
     });
-    var response = await API().rateProduct(userProv.selectedReviewProductId, rating, reviewController.text, userProv.token, userProv.id);
+    var response = await API().rateProduct(userProv.selectedReviewProductId, rating, reviewController.text, userProv.id);
+
     Navigator.of(context).pop();
   }
 
@@ -47,6 +48,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 SizedBox(height: 20),
                 Expanded(
                     child: SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
                   child: Container(
                     margin: EdgeInsets.symmetric(horizontal: 20),
                     child: Column(

@@ -18,11 +18,15 @@ class _WishlistScreenState extends State<WishlistScreen> {
   bool isLoading = true;
   var userProv;
   var wishlistProv;
+  final GlobalKey<ScaffoldState> _key = GlobalKey();
 
-  void initialiseData() async {
-    var response = await API().getWishlist(userProv.token);
-    wishlistProv.wishlist = response[0]["items"];
-    print(wishlistProv.wishlist);
+  Future<void> initialiseData() async {
+    var response = await API().getWishlist();
+    if (response.isEmpty)
+      wishlistProv.wishlist = [];
+    else
+      wishlistProv.wishlist = response[0]["items"];
+
     setState(() {
       isLoading = false;
     });
@@ -39,6 +43,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _key,
         backgroundColor: bgcolor,
         body: isLoading
             ? Center(
@@ -48,24 +53,40 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 children: [
                   Header(showWishlist: false),
                   SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text(
-                        "Wishlist",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
-                      )
-                    ],
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Text(
+                          "Wishlist",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 20,
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                   SizedBox(height: 20),
-                  Consumer<Wishlist>(
-                    builder: (context, value, child) => Expanded(
+                  Consumer<Wishlist>(builder: (context, value, child) {
+                    if (wishlistProv.wishlist.isEmpty)
+                      return Expanded(
+                        child: Center(
+                          child: Container(
+                            height: 200,
+                            margin: EdgeInsets.only(bottom: 70),
+                            child: Image.asset(
+                              "assets/images/empty.png",
+                            ),
+                          ),
+                        ),
+                      );
+                    return Expanded(
                       child: ListView.builder(
+                        physics: BouncingScrollPhysics(),
                         itemBuilder: (ctx, index) {
                           return GestureDetector(
                             onTap: () {
@@ -85,10 +106,17 @@ class _WishlistScreenState extends State<WishlistScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Container(
-                                    height: 100,
-                                    width: 100,
-                                    color: Colors.grey,
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Container(
+                                      height: 100,
+                                      width: 100,
+                                      color: Colors.grey,
+                                      child: Image.network(
+                                        wishlistProv.wishlist[index]["product"]["image"],
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
                                   ),
                                   SizedBox(width: 20),
                                   Column(
@@ -127,8 +155,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
                         },
                         itemCount: wishlistProv.wishlist.length,
                       ),
-                    ),
-                  )
+                    );
+                  })
                 ],
               ));
   }

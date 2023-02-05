@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hostelbazaar/palette.dart';
 import 'package:hostelbazaar/providers/functions.dart';
@@ -15,6 +17,8 @@ class _OTPScreenState extends State<OTPScreen> {
   final phoneController = new TextEditingController();
   final otpController = new TextEditingController();
   bool otp = false;
+  bool otpFreeze = false;
+  int time = 0;
 
   bool checkValid() {
     if (phoneController.text.length < 10) return false;
@@ -24,14 +28,29 @@ class _OTPScreenState extends State<OTPScreen> {
     return true;
   }
 
+  void startTimer() {
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        time--;
+      });
+      if (time == 0) {
+        otpFreeze = false;
+        timer.cancel();
+      }
+    });
+  }
+
   void sendOtp() async {
     setState(() {
       otp = true;
     });
     var response = await API().sendOtp("+91" + phoneController.text);
-    if (response["message"] == "OTP sent successfully")
+    if (response["message"] == "OTP sent successfully") {
       otpGenerated = true;
-    else {
+      time = 120;
+      otpFreeze = true;
+      startTimer();
+    } else {
       final snackBar = SnackBar(
         content: Text("Oops! There seems to be an error!"),
       );
@@ -80,8 +99,14 @@ class _OTPScreenState extends State<OTPScreen> {
               SizedBox(height: 100),
               inputText("Phone Number", phoneController, false),
               SizedBox(height: 20),
-              inputText("OTP", otpController, false),
-              SizedBox(height: 40),
+              otpGenerated ? inputText("OTP", otpController, false) : Container(),
+              otpGenerated ? SizedBox(height: 40) : Container(),
+              if (otpFreeze)
+                Text(
+                  "Send OTP after " + time.toString() + " seconds.",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              SizedBox(height: 20),
               ClipRRect(
                 borderRadius: BorderRadius.circular(11),
                 child: Container(
@@ -89,6 +114,7 @@ class _OTPScreenState extends State<OTPScreen> {
                   width: 300,
                   child: ElevatedButton(
                       onPressed: () {
+                        if (otpFreeze) return;
                         if (otp) return;
                         if (checkValid())
                           sendOtp();
@@ -100,7 +126,7 @@ class _OTPScreenState extends State<OTPScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: secondaryColor,
+                        backgroundColor: otpFreeze ? Colors.grey : secondaryColor,
                       ),
                       child: otp
                           ? Container(
@@ -110,56 +136,66 @@ class _OTPScreenState extends State<OTPScreen> {
                                 color: primaryColor,
                               ),
                             )
-                          : Text(
-                              "Get OTP",
-                              style: TextStyle(
-                                color: primaryColor,
-                                fontSize: 16,
-                              ),
-                            )),
+                          : otpGenerated
+                              ? Text(
+                                  "Resend OTP",
+                                  style: TextStyle(
+                                    color: primaryColor,
+                                    fontSize: 16,
+                                  ),
+                                )
+                              : Text(
+                                  "Get OTP",
+                                  style: TextStyle(
+                                    color: primaryColor,
+                                    fontSize: 16,
+                                  ),
+                                )),
                 ),
               ),
               SizedBox(
                 height: 20,
               ),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(11),
-                child: Container(
-                  height: 40,
-                  width: 300,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (otp) return;
-                      if (otpController.text.length == 0) {
-                        final snackBar = SnackBar(
-                          content: Text("Please enter a valid OTP!"),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        return;
-                      }
-                      if (otpGenerated) verify();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: secondaryColor,
-                    ),
-                    child: otp
-                        ? Container(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: primaryColor,
-                            ),
-                          )
-                        : Text(
-                            "Next",
-                            style: TextStyle(
-                              color: primaryColor,
-                              fontSize: 16,
-                            ),
+              !otpGenerated
+                  ? Container()
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(11),
+                      child: Container(
+                        height: 40,
+                        width: 300,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (otp) return;
+                            if (otpController.text.length == 0) {
+                              final snackBar = SnackBar(
+                                content: Text("Please enter a valid OTP!"),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              return;
+                            }
+                            if (otpGenerated) verify();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: secondaryColor,
                           ),
-                  ),
-                ),
-              ),
+                          child: otp
+                              ? Container(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: primaryColor,
+                                  ),
+                                )
+                              : Text(
+                                  "Next",
+                                  style: TextStyle(
+                                    color: primaryColor,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
             ],
           ),
         ),

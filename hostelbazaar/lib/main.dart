@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:hostelbazaar/busy.dart';
 import 'package:hostelbazaar/cart_screen/cart_screen.dart';
 import 'package:hostelbazaar/cart_screen/order_placed_screen.dart';
 import 'package:hostelbazaar/homescreen/homescreen.dart';
+import 'package:hostelbazaar/legal-screen/legal_screen.dart';
 import 'package:hostelbazaar/product-list%20screen/product_details_screen.dart';
 import 'package:hostelbazaar/product-list%20screen/product_list_screen.dart';
 import 'package:hostelbazaar/providers/cart.dart';
+import 'package:hostelbazaar/providers/functions.dart';
 import 'package:hostelbazaar/providers/user.dart';
 import 'package:hostelbazaar/providers/wishlist.dart';
 import 'package:hostelbazaar/review_screen/review_screen.dart';
 import 'package:hostelbazaar/search-screen/search_screen.dart';
+import 'package:hostelbazaar/sell-product-screen/sell_product_screen.dart';
 import 'package:hostelbazaar/signup-login%20screen/details_screen.dart';
 import 'package:hostelbazaar/signup-login%20screen/hostel_screen.dart';
 import 'package:hostelbazaar/signup-login%20screen/login_screen.dart';
 import 'package:hostelbazaar/signup-login%20screen/otp_screen.dart';
 import 'package:hostelbazaar/signup-login%20screen/signup_screen.dart';
+import 'package:hostelbazaar/splash_screen.dart';
+import 'package:hostelbazaar/user-profile-screen/user_profile_screen.dart';
 import 'package:hostelbazaar/wishlist_screen/wishlist_screen.dart';
 import 'package:hostelbazaar/your-orders%20screen/your_orders_screen.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +43,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<User>(
         builder: (ctx, user, _) {
           return MaterialApp(
-            title: 'Flutter Demo',
+            title: 'Hostel Bazaar',
             theme: ThemeData(
               // This is the theme of your application.
               //
@@ -51,7 +57,12 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.blue,
               fontFamily: "Poppins",
             ),
-            home: LoginScreen(),
+            home: API.token != ""
+                ? Homescreen()
+                : FutureBuilder(
+                    future: user.checkUser(),
+                    builder: (ctx, authResultSnapshot) => authResultSnapshot.connectionState == ConnectionState.waiting ? SplashScreen() : LoginScreen(),
+                  ),
             routes: {
               LoginScreen.routeName: (ctx) => LoginScreen(),
               SignupScreen.routeName: (ctx) => SignupScreen(),
@@ -66,7 +77,11 @@ class MyApp extends StatelessWidget {
               ReviewScreen.routeName: (ctx) => ReviewScreen(),
               DetailsScreen.routeName: (ctx) => DetailsScreen(),
               OTPScreen.routeName: (ctx) => OTPScreen(),
-              HostelScreen.routeName: (ctx) => HostelScreen()
+              HostelScreen.routeName: (ctx) => HostelScreen(),
+              SellProductScreen.routeName: (ctx) => SellProductScreen(),
+              LegalScreen.routeName: (ctx) => LegalScreen(),
+              UserProfileScreen.routeName: (ctx) => UserProfileScreen(),
+              BusyScreen.routeName: (ctx) => BusyScreen(),
             },
           );
         },

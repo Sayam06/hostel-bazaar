@@ -95,6 +95,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                             decoration: BoxDecoration(
                                               color: bgcolor,
                                               borderRadius: BorderRadius.circular(15),
+                                              border: Border.all(color: primaryColor, width: 2),
                                             ),
                                             child: Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,

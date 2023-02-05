@@ -30,6 +30,7 @@ class Cart with ChangeNotifier {
       print("add new product!");
     }
     print(qty[item["_id"]]);
+    notifyListeners();
   }
 
   void removeFromCart(Map<String, dynamic> item) {
@@ -64,7 +65,7 @@ class Cart with ChangeNotifier {
     return cost!;
   }
 
-  void checkOut(String token) async {
+  void checkOut() async {
     print("checking out");
     List<Map<String, dynamic>> products = [];
     for (int i = 0; i < cartItems.length; i++) {
@@ -76,13 +77,16 @@ class Cart with ChangeNotifier {
     Map<String, dynamic> checkOutData = {
       "products": products,
     };
-    await API().checkOut(checkOutData, token);
+    var res = await API().checkOut(checkOutData);
+    if (res == "Unauthorized") {
+      throw "err";
+    }
     cartItems = [];
     qty = {};
     notifyListeners();
   }
 
-  Future<void> buyNow(String token, String id, int quantity) async {
+  Future<void> buyNow(String id, int quantity) async {
     print("checking out");
     List<Map<String, dynamic>> products = [];
 
@@ -94,7 +98,7 @@ class Cart with ChangeNotifier {
         }
       ]
     };
-    await API().checkOut(checkOutData, token);
+    await API().checkOut(checkOutData);
     notifyListeners();
   }
 }

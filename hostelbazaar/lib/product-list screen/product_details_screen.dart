@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:hostelbazaar/cart_screen/order_placed_screen.dart';
 import 'package:hostelbazaar/footer.dart';
 import 'package:hostelbazaar/header.dart';
+import 'package:hostelbazaar/mainDrawer.dart';
 import 'package:hostelbazaar/palette.dart';
 import 'package:hostelbazaar/providers/cart.dart';
 import 'package:hostelbazaar/providers/functions.dart';
 import 'package:hostelbazaar/providers/user.dart';
 import 'package:hostelbazaar/providers/wishlist.dart';
-import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
@@ -28,6 +28,22 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     setState(() {
       isLoading = true;
     });
+    bool details = false;
+    try {
+      int.parse(userProv.selectedProduct["sellerId"][0]);
+      details = false;
+    } catch (e) {
+      details = true;
+    }
+
+    if (!details) {
+      var data = await API().getSellerDetails(userProv.selectedProduct["sellerId"]);
+      userProv.selectedProduct["sellerId"] = data[0];
+    }
+
+    // print(data);
+
+    // print(userProv.selectedProduct);
     product = userProv.selectedProduct;
     setState(() {
       isLoading = false;
@@ -45,7 +61,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // print(product);
     return Scaffold(
+      drawer: MainDrawer(),
       backgroundColor: bgcolor,
       resizeToAvoidBottomInset: false,
       body: isLoading
@@ -61,8 +79,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 SizedBox(height: 20),
                 Expanded(
                     child: SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: 30),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -82,10 +101,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           ),
                         ),
                         SizedBox(height: 20),
-                        Container(
-                          width: double.maxFinite,
-                          height: 300,
-                          color: Colors.grey,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            width: double.maxFinite,
+                            height: 300,
+                            color: Colors.grey,
+                            child: Image.network(
+                              product["image"],
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                         SizedBox(
                           height: 20,
@@ -104,23 +130,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             GestureDetector(
                                 onTap: () async {
                                   if (!wishlistProv.containsProduct(product["_id"])) {
-                                    var response = await API().addToWishlist(userProv.token, product["_id"]);
+                                    var response = await API().addToWishlist(product["_id"]);
                                     wishlistProv.addProduct(product);
                                   } else {
-                                    var response = await API().removeFromWishlist(userProv.token, product["_id"]);
+                                    var response = await API().removeFromWishlist(product["_id"]);
                                     wishlistProv.removeProduct(product["_id"]);
                                   }
                                 },
                                 child: Consumer<Wishlist>(
-                                  builder: (context, value, child) => Container(
-                                    child: !wishlistProv.containsProduct(product["_id"])
-                                        ? Image.asset("assets/images/unlike.png")
-                                        : Container(
-                                            height: 10,
-                                            width: 10,
-                                            color: Colors.white,
-                                          ),
-                                  ),
+                                  builder: (context, value, child) => Container(child: !wishlistProv.containsProduct(product["_id"]) ? Container(height: 20, child: Image.asset("assets/images/unlike.png")) : Container(height: 20, child: Image.asset("assets/images/like.png"))),
                                 ))
                           ],
                         ),
@@ -206,7 +224,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       });
                                       var cartProv = Provider.of<Cart>(context, listen: false);
                                       await cartProv.buyNow(
-                                        Provider.of<User>(context, listen: false).token,
                                         product["_id"],
                                         qty,
                                       );
@@ -242,18 +259,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       showDialog(
                                           context: context,
                                           builder: (BuildContext context) {
-                                            Future.delayed(Duration(milliseconds: 1500), () {
+                                            Future.delayed(Duration(milliseconds: 1000), () {
                                               Navigator.of(context).pop(true);
                                             });
                                             return StatefulBuilder(builder: (context, StateSetter setStat) {
                                               return Center(
                                                 child: Container(
-                                                    width: 250,
-                                                    height: 250,
+                                                    width: 200,
+                                                    height: 200,
                                                     decoration: BoxDecoration(
                                                       color: secondaryColor,
                                                       borderRadius: BorderRadius.circular(360),
-                                                      border: Border.all(color: primaryColor),
+                                                      border: Border.all(color: primaryColor, width: 2),
                                                     ),
                                                     child: Column(
                                                       mainAxisAlignment: MainAxisAlignment.center,
@@ -317,7 +334,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                   ),
                 )),
-                Footer(current: "")
+                Footer(
+                  current: "",
+                  ctx: context,
+                )
               ],
             ),
     );

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hostelbazaar/footer.dart';
 import 'package:hostelbazaar/header.dart';
+import 'package:hostelbazaar/mainDrawer.dart';
 import 'package:hostelbazaar/palette.dart';
 import 'package:hostelbazaar/providers/functions.dart';
 import 'package:hostelbazaar/providers/user.dart';
+import 'package:hostelbazaar/your-orders%20screen/buy_orders.dart';
+import 'package:hostelbazaar/your-orders%20screen/sell_orders.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -15,145 +18,102 @@ class YourOrdersScreen extends StatefulWidget {
 }
 
 class _YourOrdersScreenState extends State<YourOrdersScreen> {
-  bool isLoading = true;
-  var userProv;
-  late List<dynamic> data;
+  String selected = "buy";
 
-  void getData() async {
-    setState(() {
-      isLoading = true;
-    });
-    data = await API().getPreviousOrders(userProv.token);
-    data = new List.from(data.reversed);
-    setState(() {
-      isLoading = false;
-    });
+  dynamic change(String status, String id) async {
+    return await API().changeOrderStatus(status, id);
   }
 
   @override
   void initState() {
-    userProv = Provider.of<User>(context, listen: false);
-    getData();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MainDrawer(),
       backgroundColor: bgcolor,
-      body: isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: primaryColor,
-              ),
-            )
-          : Column(
-              children: [
-                Header(),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.arrow_back_ios),
-                        color: Colors.white,
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      Expanded(
-                        child: Text(
-                          "Your Orders",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      )
-                    ],
-                  ),
+      body: Column(
+        children: [
+          Header(),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: primaryColor,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                SizedBox(height: 20),
-                Expanded(
-                  child: ListView.builder(
-                    itemBuilder: ((context, index) {
-                      return Container(
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        if (selected == "buy") return;
+                        setState(() {
+                          selected = "buy";
+                        });
+                      },
+                      child: Container(
                         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         decoration: BoxDecoration(
-                          border: Border(
-                            top: BorderSide(
-                              color: Colors.black,
-                              width: 2,
-                            ),
+                          color: selected == "buy" ? Color.fromRGBO(207, 193, 221, 1) : null,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          "Buy Orders",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: secondaryColor,
                           ),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 100,
-                              width: 100,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(width: 20),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(height: 10),
-                                data[index]["items"].length > 1
-                                    ? Row(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            data[index]["items"][0]["product"]["name"],
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          Text(
-                                            " +" + (data[index]["items"].length - 1).toString() + " others",
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        ],
-                                      )
-                                    : Text(
-                                        data[index]["items"][0]["product"]["name"],
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                Text(
-                                  "Order placed on " + DateFormat("dd MMMM, yyyy").format(DateTime.parse(data[index]["createdAt"])),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: mainColor,
-                                  ),
-                                ),
-                              ],
-                            )
-                          ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        if (selected == "sell") return;
+                        setState(() {
+                          selected = "sell";
+                        });
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: selected == "sell" ? Color.fromRGBO(207, 193, 221, 1) : null,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      );
-                    }),
-                    itemCount: data.length,
-                    padding: EdgeInsets.all(0),
-                  ),
+                        child: Text(
+                          "Sell Orders",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: secondaryColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                Footer(current: ""),
-              ],
-            ),
+              )
+            ],
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Expanded(
+            child: selected == "buy"
+                ? BuyOrders(
+                    changeStatus: change,
+                  )
+                : SellOrders(changeStatus: change),
+          ),
+          Footer(
+            current: "",
+            ctx: context,
+          ),
+        ],
+      ),
     );
   }
 }

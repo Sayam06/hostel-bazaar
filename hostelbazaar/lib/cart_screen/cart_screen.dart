@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:hostelbazaar/cart_screen/order_placed_screen.dart';
 import 'package:hostelbazaar/footer.dart';
 import 'package:hostelbazaar/header.dart';
+import 'package:hostelbazaar/mainDrawer.dart';
 import 'package:hostelbazaar/palette.dart';
 import 'package:hostelbazaar/providers/cart.dart';
+import 'package:hostelbazaar/providers/functions.dart';
 import 'package:hostelbazaar/providers/user.dart';
 import 'package:provider/provider.dart';
 
@@ -17,10 +19,12 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   var cartProv;
   bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     cartProv = Provider.of<Cart>(context, listen: false);
     return Scaffold(
+      drawer: MainDrawer(),
       backgroundColor: bgcolor,
       body: isLoading
           ? Center(
@@ -35,26 +39,42 @@ class _CartScreenState extends State<CartScreen> {
                 SizedBox(
                   height: 20,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Text(
-                      "Cart",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 20,
-                      ),
-                    )
-                  ],
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Text(
+                        "Cart",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      )
+                    ],
+                  ),
                 ),
                 SizedBox(
                   height: 20,
                 ),
-                Consumer<Cart>(
-                  builder: (context, value, child) => Expanded(
+                Consumer<Cart>(builder: (context, value, child) {
+                  if (cartProv.cartItems.isEmpty)
+                    return Expanded(
+                      child: Center(
+                        child: Container(
+                          height: 200,
+                          margin: EdgeInsets.only(bottom: 70),
+                          child: Image.asset(
+                            "assets/images/empty.png",
+                          ),
+                        ),
+                      ),
+                    );
+                  return Expanded(
                     child: ListView.builder(
+                      physics: BouncingScrollPhysics(),
                       itemBuilder: ((context, index) {
                         var item = cartProv.cartItems[index];
                         return Container(
@@ -70,10 +90,17 @@ class _CartScreenState extends State<CartScreen> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                height: 100,
-                                width: 100,
-                                color: Colors.grey,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  height: 100,
+                                  width: 100,
+                                  color: Colors.grey,
+                                  child: Image.network(
+                                    item["image"],
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                               ),
                               SizedBox(
                                 width: 10,
@@ -187,8 +214,8 @@ class _CartScreenState extends State<CartScreen> {
                       }),
                       itemCount: cartProv.cartItems.length,
                     ),
-                  ),
-                ),
+                  );
+                }),
                 Consumer<Cart>(
                   builder: (context, value, child) => Container(
                     margin: EdgeInsets.only(left: 20),
@@ -225,11 +252,18 @@ class _CartScreenState extends State<CartScreen> {
                         backgroundColor: primaryColor,
                       ),
                       onPressed: () async {
+                        if (cartProv.cartItems.isEmpty) {
+                          final snackBar = SnackBar(
+                            content: Text("No items in cart!"),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                          return;
+                        }
                         setState(() {
                           isLoading = true;
                         });
-                        if (cartProv.qty.isEmpty) return;
-                        await cartProv.checkOut(Provider.of<User>(context, listen: false).token);
+                        await cartProv.checkOut();
+
                         Navigator.of(context).pushNamed(OrderPlacedScreen.routeName).then((value) {
                           setState(() {
                             isLoading = false;
@@ -246,9 +280,12 @@ class _CartScreenState extends State<CartScreen> {
                       )),
                 ),
                 SizedBox(
-                  height: 10,
+                  height: 30,
                 ),
-                Footer(current: "cart")
+                Footer(
+                  current: "cart",
+                  ctx: context,
+                )
               ],
             ),
     );

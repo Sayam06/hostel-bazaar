@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:hostelbazaar/busy.dart';
 import 'package:hostelbazaar/footer.dart';
 import 'package:hostelbazaar/header.dart';
+import 'package:hostelbazaar/mainDrawer.dart';
 import 'package:hostelbazaar/palette.dart';
 import 'package:hostelbazaar/product-list%20screen/product_list_screen.dart';
 import 'package:hostelbazaar/providers/functions.dart';
+import 'package:hostelbazaar/providers/tokens.dart';
 import 'package:hostelbazaar/providers/user.dart';
+import 'package:hostelbazaar/providers/wishlist.dart';
 import 'package:hostelbazaar/search-screen/search_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -22,12 +26,27 @@ class _HomescreenState extends State<Homescreen> {
   var userProv;
   var wishlistProv;
 
-  void initialiseData() async {
+  Future<void> initialiseData() async {
     setState(() {
       isLoading = true;
     });
-    dynamic response = await API().getLastNOrders(userProv.token);
+
+    var version = await API().getVersion();
+    if (version["version"] != "1.0.0+1") {
+      Navigator.of(context).pushNamed(BusyScreen.routeName);
+      return;
+    }
+
+    dynamic response = await API().getLastNOrders();
     userProv.lastNOrders = response;
+
+    var resp = await API().getWishlist();
+
+    if (resp.isEmpty)
+      wishlistProv.wishlist = [];
+    else
+      wishlistProv.wishlist = resp[0]["items"];
+
     setState(() {
       isLoading = false;
     });
@@ -37,7 +56,8 @@ class _HomescreenState extends State<Homescreen> {
     setState(() {
       isLoading = true;
     });
-    var response = await API().searchUniqueProduct(searchController.text, userProv.token);
+    print("in");
+    var response = await API().searchUniqueProduct(searchController.text);
     userProv.selectedCategoryProductList = response;
     Navigator.of(context).pushNamed(SearchScreen.routeName).then((value) {
       setState(() {
@@ -49,15 +69,17 @@ class _HomescreenState extends State<Homescreen> {
   @override
   void initState() {
     userProv = Provider.of<User>(context, listen: false);
-    wishlistProv = Provider.of<User>(context, listen: false);
+    wishlistProv = Provider.of<Wishlist>(context, listen: false);
     initialiseData();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    print(userProv.lastNOrders);
     var w = MediaQuery.of(context).size.width;
     return Scaffold(
+      drawer: MainDrawer(),
       backgroundColor: bgcolor,
       resizeToAvoidBottomInset: false,
       body: isLoading
@@ -70,24 +92,32 @@ class _HomescreenState extends State<Homescreen> {
               children: [
                 Header(),
                 SizedBox(height: 20),
-                Container(
-                  height: 100,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: userProv.lastNOrders.length,
-                    itemBuilder: ((context, index) {
-                      return Container(
-                        height: 50,
-                        width: 150,
-                        margin: index == 0 ? EdgeInsets.only(left: w * 0.06, right: 5) : EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                          color: primaryColor,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      );
-                    }),
+                if (userProv.lastNOrders.isNotEmpty)
+                  Container(
+                    height: 100,
+                    child: ListView.builder(
+                      physics: BouncingScrollPhysics(),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: userProv.lastNOrders.length,
+                      itemBuilder: ((context, index) {
+                        return Container(
+                          width: 150,
+                          margin: index == 0 ? EdgeInsets.only(left: w * 0.06, right: 10) : EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: primaryColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.network(
+                              userProv.lastNOrders[index]["items"][0]["product"]["image"],
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
                   ),
-                ),
                 SizedBox(height: 20),
                 Expanded(
                   child: Container(
@@ -117,7 +147,7 @@ class _HomescreenState extends State<Homescreen> {
                                       });
                                       return;
                                     }
-                                    searchResults = await API().searchProduct(searchController.text, userProv.token);
+                                    searchResults = await API().searchProduct(searchController.text);
                                     setState(() {});
                                   },
                                 ),
@@ -130,93 +160,104 @@ class _HomescreenState extends State<Homescreen> {
                             ],
                           ),
                         ),
-                        if (searchResults.length != 0)
-                          Container(
-                            constraints: BoxConstraints(
-                              maxHeight: 200,
-                            ),
-                            width: double.infinity,
-                            margin: EdgeInsets.only(top: 10),
-                            decoration: BoxDecoration(
-                              color: bgLite,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  SizedBox(height: 10),
-                                  ...searchResults.map((e) {
-                                    return Column(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            if (searchController.text.isNotEmpty) search();
-                                          },
-                                          child: Container(
-                                            margin: EdgeInsets.symmetric(horizontal: 10),
-                                            width: double.infinity,
-                                            child: Text(
-                                              e["name"],
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Divider(
-                                          color: Colors.black,
-                                          thickness: 0.5,
-                                        ),
-                                      ],
-                                    );
-                                  }),
-                                  SizedBox(height: 10),
-                                ],
-                              ),
-                            ),
-                          ),
                         SizedBox(height: 20),
                         Expanded(
                           // height: 200,
-                          child: SingleChildScrollView(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
+                          child: Stack(
+                            children: [
+                              SingleChildScrollView(
+                                physics: BouncingScrollPhysics(),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    productCat("munchies", userProv, w),
-                                    SizedBox(height: 10),
-                                    productCat("bakery", userProv, w),
-                                    SizedBox(height: 10),
-                                    productCat("grooming", userProv, w),
-                                    SizedBox(height: 10),
+                                    Column(
+                                      children: [
+                                        productCat("munchies", userProv, w),
+                                        SizedBox(height: 10),
+                                        productCat("bakery", userProv, w),
+                                        SizedBox(height: 10),
+                                        productCat("grooming", userProv, w),
+                                        SizedBox(height: 10),
+                                      ],
+                                    ),
+                                    // SizedBox(width: 10),
+                                    Column(
+                                      children: [
+                                        productCat("drinks", userProv, w),
+                                        SizedBox(height: 10),
+                                        productCat("electronics", userProv, w),
+                                        SizedBox(height: 10),
+                                        productCat("daily fresh", userProv, w),
+                                        SizedBox(height: 10),
+                                        productCat("misc", userProv, w),
+                                        SizedBox(height: 10),
+                                      ],
+                                    ),
                                   ],
                                 ),
-                                // SizedBox(width: 10),
-                                Column(
-                                  children: [
-                                    productCat("drinks", userProv, w),
-                                    SizedBox(height: 10),
-                                    productCat("electronics", userProv, w),
-                                    SizedBox(height: 10),
-                                    productCat("daily fresh", userProv, w),
-                                    SizedBox(height: 10),
-                                    productCat("misc", userProv, w),
-                                    SizedBox(height: 10),
-                                  ],
+                              ),
+                              if (searchResults.length != 0)
+                                Positioned(
+                                  top: -20,
+                                  child: Container(
+                                    constraints: BoxConstraints(
+                                      maxHeight: 500,
+                                    ),
+                                    width: MediaQuery.of(context).size.width,
+                                    margin: EdgeInsets.only(top: 10),
+                                    decoration: BoxDecoration(
+                                      color: bgcolor,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        children: [
+                                          SizedBox(height: 10),
+                                          ...searchResults.map((e) {
+                                            return Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    if (searchController.text.isNotEmpty) search();
+                                                  },
+                                                  child: Container(
+                                                    margin: EdgeInsets.symmetric(horizontal: 10),
+                                                    width: double.infinity,
+                                                    child: Text(
+                                                      e["name"],
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Divider(
+                                                  color: Colors.black,
+                                                  thickness: 0.5,
+                                                ),
+                                              ],
+                                            );
+                                          }),
+                                          SizedBox(height: 10),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ],
-                            ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                Footer(current: "home"),
+                Footer(
+                  current: "home",
+                  ctx: context,
+                ),
               ],
             ),
     );

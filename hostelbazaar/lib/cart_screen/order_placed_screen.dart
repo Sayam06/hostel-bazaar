@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:hostelbazaar/footer.dart';
 import 'package:hostelbazaar/header.dart';
+import 'package:hostelbazaar/mainDrawer.dart';
 import 'package:hostelbazaar/palette.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:hostelbazaar/providers/functions.dart';
@@ -20,9 +21,9 @@ class _OrderPlacedScreenState extends State<OrderPlacedScreen> {
   bool isLoading = true;
   var userProv;
   var data;
+
   void initialiseData() async {
-    data = await API().getLastOrderUser(userProv.token);
-    // API().processData(data);
+    data = await API().getLastOrderUser();
     setState(() {
       isLoading = false;
     });
@@ -38,6 +39,7 @@ class _OrderPlacedScreenState extends State<OrderPlacedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MainDrawer(),
       backgroundColor: bgcolor,
       body: isLoading
           ? Center(
@@ -51,6 +53,7 @@ class _OrderPlacedScreenState extends State<OrderPlacedScreen> {
                 SizedBox(height: 10),
                 Expanded(
                   child: SingleChildScrollView(
+                    physics: BouncingScrollPhysics(),
                     child: Container(
                       margin: EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
@@ -196,7 +199,7 @@ class _OrderPlacedScreenState extends State<OrderPlacedScreen> {
                                           style: sellerStyle(),
                                         ),
                                         Text(
-                                          "Seller Hostel: " + data[2][seller]["hostel"].toString(),
+                                          "Seller Hostel: " + data[2][seller]["hostel"]["name"].toString(),
                                           style: sellerStyle(),
                                         ),
                                         SizedBox(height: 20),
@@ -226,7 +229,10 @@ class _OrderPlacedScreenState extends State<OrderPlacedScreen> {
                     ),
                   ),
                 ),
-                Footer(current: ""),
+                Footer(
+                  current: "",
+                  ctx: context,
+                ),
               ],
             ),
     );
