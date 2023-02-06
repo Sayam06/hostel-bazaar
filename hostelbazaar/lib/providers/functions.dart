@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:hostelbazaar/providers/tokens.dart';
 import 'package:hostelbazaar/providers/user.dart';
+import 'package:hostelbazaar/signup-login%20screen/login_screen.dart';
 import 'package:hostelbazaar/url.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -11,6 +13,7 @@ import 'package:http_parser/http_parser.dart';
 class API {
   static String refresh = "";
   static String token = "";
+  static late BuildContext context;
 
   dynamic refreshToken() async {
     String callUrl = "$URL/auth/refresh";
@@ -22,6 +25,13 @@ class API {
     );
     print(response.body);
     var data = jsonDecode(response.body);
+    if (data["success"] == false) {
+      token = "";
+      refresh = "";
+      await User().logout();
+      Navigator.of(context).pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false);
+      return;
+    }
     refresh = data["refreshToken"];
     token = data["accessToken"].toString().substring(7);
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hostelbazaar/cart_screen/order_placed_screen.dart';
 import 'package:hostelbazaar/footer.dart';
 import 'package:hostelbazaar/header.dart';
+import 'package:hostelbazaar/homescreen/homescreen.dart';
 import 'package:hostelbazaar/mainDrawer.dart';
 import 'package:hostelbazaar/palette.dart';
 import 'package:hostelbazaar/providers/cart.dart';
@@ -142,13 +143,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 ))
                           ],
                         ),
-                        Text(
-                          "Delivery charge: ₹ 10",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white,
-                          ),
-                        ),
+                        // Text(
+                        //   "Delivery charge: ₹ 10",
+                        //   style: TextStyle(
+                        //     fontSize: 12,
+                        //     color: Colors.white,
+                        //   ),
+                        // ),
                         SizedBox(height: 20),
                         Text(
                           "In stock.",
@@ -227,9 +228,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         product["_id"],
                                         qty,
                                       );
-                                      Navigator.of(context).pushNamed(OrderPlacedScreen.routeName).then((value) => setState(() {
-                                            isLoading = false;
-                                          }));
+                                      Navigator.of(context).pushReplacementNamed(OrderPlacedScreen.routeName);
                                     },
                                     child: Text(
                                       "Buy Now",

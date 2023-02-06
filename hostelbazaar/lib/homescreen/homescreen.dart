@@ -30,7 +30,7 @@ class _HomescreenState extends State<Homescreen> {
     setState(() {
       isLoading = true;
     });
-
+    API.context = context;
     var version = await API().getVersion();
     if (version["version"] != "1.0.0+1") {
       Navigator.of(context).pushNamed(BusyScreen.routeName);
