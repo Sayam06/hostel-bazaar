@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hostelbazaar/empty.dart';
 import 'package:hostelbazaar/footer.dart';
 import 'package:hostelbazaar/header.dart';
 import 'package:hostelbazaar/mainDrawer.dart';
@@ -146,94 +147,97 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     Expanded(
                       child: Stack(
                         children: [
-                          ListView.builder(
-                            physics: BouncingScrollPhysics(),
-                            itemBuilder: ((context, index) {
-                              return GestureDetector(
-                                onTap: () {
-                                  // userProv.selectedProductIndex = index;
-                                  userProv.selectedProduct = userProv.selectedCategoryProductList[index];
-                                  Navigator.of(context).pushNamed(ProductDetailsScreen.routeName);
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      top: BorderSide(
-                                        color: Colors.black,
-                                        width: 2,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: Container(
-                                          height: 80,
-                                          width: 80,
-                                          color: Colors.grey,
-                                          child: Image.network(
-                                            userProv.selectedCategoryProductList[index]["image"].toString(),
-                                            fit: BoxFit.cover,
-                                          ),
+                          if (userProv.selectedCategoryProductList.isNotEmpty)
+                            ListView.builder(
+                              // cacheExtent: 9999,
+                              physics: BouncingScrollPhysics(),
+                              itemBuilder: ((context, index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    // userProv.selectedProductIndex = index;
+                                    userProv.selectedProduct = userProv.selectedCategoryProductList[index];
+                                    Navigator.of(context).pushNamed(ProductDetailsScreen.routeName);
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        top: BorderSide(
+                                          color: Colors.black,
+                                          width: 2,
                                         ),
                                       ),
-                                      SizedBox(width: 20),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            userProv.selectedCategoryProductList[index]["name"],
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                              color: Colors.white,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: Container(
+                                            height: 80,
+                                            width: 80,
+                                            color: Colors.grey,
+                                            child: Image.network(
+                                              userProv.selectedCategoryProductList[index]["image"].toString(),
+                                              fit: BoxFit.cover,
                                             ),
                                           ),
-                                          Text(
-                                            "₹ " + userProv.selectedCategoryProductList[index]["price"].toString(),
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: primaryColor,
+                                        ),
+                                        SizedBox(width: 20),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              userProv.selectedCategoryProductList[index]["name"],
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                                color: Colors.white,
+                                              ),
                                             ),
-                                          ),
-                                          SizedBox(height: 5),
-                                          Text(
-                                            "In stock.",
-                                            style: TextStyle(
-                                              color: mainColor,
-                                              fontSize: 16,
+                                            Text(
+                                              "₹ " + userProv.selectedCategoryProductList[index]["price"].toString(),
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: primaryColor,
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Text(
+                                              "In stock.",
+                                              style: TextStyle(
+                                                color: mainColor,
+                                                fontSize: 16,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                        Spacer(),
+                                        if (wishlistProv.wishlist.isEmpty) Container(height: 20, child: Image.asset("assets/images/unlike.png")),
+                                        if (wishlistProv.wishlist.isNotEmpty)
+                                          GestureDetector(
+                                            onTap: () async {
+                                              if (!wishlistProv.containsProduct(userProv.selectedCategoryProductList[index]["_id"])) {
+                                                var response = await API().addToWishlist(userProv.selectedCategoryProductList[index]["_id"]);
+                                                wishlistProv.addProduct(userProv.selectedCategoryProductList[index]);
+                                              } else {
+                                                var response = await API().removeFromWishlist(userProv.selectedCategoryProductList[index]["_id"]);
+                                                wishlistProv.removeProduct(userProv.selectedCategoryProductList[index]["_id"]);
+                                              }
+                                            },
+                                            child: Consumer<Wishlist>(
+                                              builder: (context, value, child) => Container(child: !wishlistProv.containsProduct(userProv.selectedCategoryProductList[index]["_id"]) ? Container(height: 20, child: Image.asset("assets/images/unlike.png")) : Container(height: 20, child: Image.asset("assets/images/like.png"))),
                                             ),
                                           )
-                                        ],
-                                      ),
-                                      Spacer(),
-                                      if (wishlistProv.wishlist.isEmpty) Container(height: 20, child: Image.asset("assets/images/unlike.png")),
-                                      if (wishlistProv.wishlist.isNotEmpty)
-                                        GestureDetector(
-                                          onTap: () async {
-                                            if (!wishlistProv.containsProduct(userProv.selectedCategoryProductList[index]["_id"])) {
-                                              var response = await API().addToWishlist(userProv.selectedCategoryProductList[index]["_id"]);
-                                              wishlistProv.addProduct(userProv.selectedCategoryProductList[index]);
-                                            } else {
-                                              var response = await API().removeFromWishlist(userProv.selectedCategoryProductList[index]["_id"]);
-                                              wishlistProv.removeProduct(userProv.selectedCategoryProductList[index]["_id"]);
-                                            }
-                                          },
-                                          child: Consumer<Wishlist>(
-                                            builder: (context, value, child) => Container(child: !wishlistProv.containsProduct(userProv.selectedCategoryProductList[index]["_id"]) ? Container(height: 20, child: Image.asset("assets/images/unlike.png")) : Container(height: 20, child: Image.asset("assets/images/like.png"))),
-                                          ),
-                                        )
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              );
-                            }),
-                            itemCount: userProv.selectedCategoryProductList.length,
-                            padding: EdgeInsets.all(0),
-                          ),
+                                );
+                              }),
+                              itemCount: userProv.selectedCategoryProductList.length,
+                              padding: EdgeInsets.all(0),
+                            ),
+                          if (userProv.selectedCategoryProductList.isEmpty) Empty(),
                           if (searchResults.length != 0)
                             Positioned(
                               top: -20,

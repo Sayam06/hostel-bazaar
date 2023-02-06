@@ -74,6 +74,7 @@ class _CartScreenState extends State<CartScreen> {
                     );
                   return Expanded(
                     child: ListView.builder(
+                      // cacheExtent: 9999,
                       physics: BouncingScrollPhysics(),
                       itemBuilder: ((context, index) {
                         var item = cartProv.cartItems[index];

@@ -281,6 +281,7 @@ class _SellProductScreenState extends State<SellProductScreen> {
                                           ),
                                           child: Center(
                                             child: TextField(
+                                              keyboardType: TextInputType.number,
                                               textAlign: TextAlign.center,
                                               controller: quantityController,
                                               decoration: InputDecoration.collapsed(
@@ -413,6 +414,7 @@ class _SellProductScreenState extends State<SellProductScreen> {
                                               children: [
                                                 Expanded(
                                                   child: ListView.builder(
+                                                    // cacheExtent: 9999,
                                                     physics: BouncingScrollPhysics(),
                                                     itemBuilder: ((ctx, index) {
                                                       return GestureDetector(

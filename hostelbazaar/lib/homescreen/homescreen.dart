@@ -96,6 +96,7 @@ class _HomescreenState extends State<Homescreen> {
                   Container(
                     height: 100,
                     child: ListView.builder(
+                      // cacheExtent: 9999,
                       physics: BouncingScrollPhysics(),
                       scrollDirection: Axis.horizontal,
                       itemCount: userProv.lastNOrders.length,
