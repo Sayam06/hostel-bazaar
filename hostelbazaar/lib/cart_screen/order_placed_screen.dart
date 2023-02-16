@@ -196,7 +196,7 @@ class _OrderPlacedScreenState extends State<OrderPlacedScreen> {
                                             style: sellerStyle(),
                                           ),
                                           Text(
-                                            "Seller Contact: " + data[2][seller]["email"].toString(),
+                                            "Seller Contact: " + data[2][seller]["contact"].toString(),
                                             style: sellerStyle(),
                                           ),
                                           Text(

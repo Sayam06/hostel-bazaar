@@ -27,29 +27,29 @@ class _HomescreenState extends State<Homescreen> {
   var wishlistProv;
 
   Future<void> initialiseData() async {
-    setState(() {
-      isLoading = true;
-    });
-    API.context = context;
-    var version = await API().getVersion();
-    if (version["version"] != "1.0.0+1") {
-      Navigator.of(context).pushNamed(BusyScreen.routeName);
-      return;
-    }
+    // setState(() {
+    //   isLoading = true;
+    // });
+    // API.context = context;
+    // var version = await API().getVersion();
+    // if (version["version"] != "1.0.0+5") {
+    //   Navigator.of(context).pushNamed(BusyScreen.routeName);
+    //   return;
+    // }
 
-    dynamic response = await API().getLastNOrders();
-    userProv.lastNOrders = response;
+    // dynamic response = await API().getLastNOrders();
+    // userProv.lastNOrders = response;
 
     var resp = await API().getWishlist();
 
-    if (resp.isEmpty)
-      wishlistProv.wishlist = [];
-    else
-      wishlistProv.wishlist = resp[0]["items"];
+    // if (resp.isEmpty)
+    //   wishlistProv.wishlist = [];
+    // else
+    //   wishlistProv.wishlist = resp[0]["items"];
 
-    setState(() {
-      isLoading = false;
-    });
+    // setState(() {
+    //   isLoading = false;
+    // });
   }
 
   void search() async {

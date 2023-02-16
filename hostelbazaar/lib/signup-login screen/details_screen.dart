@@ -15,6 +15,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
   final nameController = new TextEditingController();
   final emailController = new TextEditingController();
   final passwordController = new TextEditingController();
+  final upiController = new TextEditingController();
   String error = "";
 
   bool verify() {
@@ -28,6 +29,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
     }
     if (passwordController.text.isEmpty) {
       error = "Please enter a password!";
+      return false;
+    }
+    if (upiController.text.isEmpty || !upiController.text.contains('@')) {
+      error = "Please enter a valid UPI id!";
       return false;
     }
 
@@ -51,12 +56,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   "assets/images/logo.png",
                 ),
               ),
-              SizedBox(height: 100),
+              SizedBox(height: 60),
               inputText("Full Name", nameController, false),
               SizedBox(height: 20),
               inputText("Email", emailController, false),
               SizedBox(height: 20),
               inputText("Password", passwordController, true),
+              SizedBox(height: 20),
+              inputText("UPI", upiController, false),
               SizedBox(height: 40),
               ClipRRect(
                 borderRadius: BorderRadius.circular(11),
@@ -76,6 +83,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         userProv.name = nameController.text;
                         userProv.email = emailController.text;
                         userProv.password = passwordController.text;
+                        userProv.upi = upiController.text;
                         Navigator.of(context).pushNamed(OTPScreen.routeName);
                       },
                       style: ElevatedButton.styleFrom(
@@ -90,7 +98,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       )),
                 ),
               ),
-              SizedBox(height: 130),
+              SizedBox(height: 80),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.max,

@@ -59,6 +59,8 @@ class _HostelScreenState extends State<HostelScreen> {
       "hostel": userProv.hostel["_id"].toString(),
       "college": userProv.college["_id"].toString(),
       "room_number": roomNumberController.text,
+      "contact": userProv.contact,
+      "UPI": userProv.upi,
     };
     print(body);
     var response = await API().signUp(body);

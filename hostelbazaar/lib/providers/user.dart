@@ -8,6 +8,8 @@ class User with ChangeNotifier {
   String name = "";
   String email = "";
   String password = "";
+  String contact = "";
+  String upi = "";
   Map<String, dynamic> college = {};
   Map<String, dynamic> hostel = {};
   int selectedImg = -1;

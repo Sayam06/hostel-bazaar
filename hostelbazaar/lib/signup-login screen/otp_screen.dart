@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hostelbazaar/palette.dart';
 import 'package:hostelbazaar/providers/functions.dart';
+import 'package:hostelbazaar/providers/user.dart';
 import 'package:hostelbazaar/signup-login%20screen/hostel_screen.dart';
+import 'package:provider/provider.dart';
 
 class OTPScreen extends StatefulWidget {
   static const routeName = "/otp";
@@ -116,9 +118,10 @@ class _OTPScreenState extends State<OTPScreen> {
                       onPressed: () {
                         if (otpFreeze) return;
                         if (otp) return;
-                        if (checkValid())
+                        if (checkValid()) {
+                          Provider.of<User>(context, listen: false).contact = phoneController.text;
                           sendOtp();
-                        else {
+                        } else {
                           final snackBar = SnackBar(
                             content: Text("Please enter a valid number!"),
                           );
